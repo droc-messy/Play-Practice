@@ -121,7 +121,8 @@ button:disabled{opacity:.4;cursor:default}
 <div class="grp"><span class="lbl">Speed &amp; sound</span>
 <select id="rate"><option value="1">🐢 Slow</option><option value="1.15" selected>🚶 Medium</option><option value="1.35">🐇 Fast</option></select>
 <label><input type="checkbox" id="voiceChk" checked> Others speak out loud</label>
-<label><input type="checkbox" id="micChk" checked> Listen to me (microphone)</label></div>
+<label><input type="checkbox" id="micChk" checked> Listen to me (microphone)</label>
+<span class="hint" id="localMicHint" hidden>Local file mode: the microphone detects when you finish speaking. For word-by-word highlighting, open the app over HTTPS or localhost.</span></div>
 </div>
 
 </aside><main class="main">
@@ -556,8 +557,13 @@ function hideFor(l){
   return $('hideAll').checked;
 }
 let rec=null,turnDone=false,usedHint=false,silenceT=null,watchdog=null,pos=0,sessStart=0,tWords=[],micOk=true;
-const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-let micStream=null,micCtx=null,vad=null,srOk=true,srRetry=0;
+/* file:// speech recognition can request permission again whenever the browser
+   ends a recognition session. Use the shared audio stream for local rehearsals. */
+const localFile=location.protocol==='file:';
+const SR=localFile?null:(window.SpeechRecognition||window.webkitSpeechRecognition);
+$('localMicHint').hidden=!localFile;
+let micStream=null,micCtx=null,micRequest=null,vad=null,srOk=true,srRetry=0;
+let recTurn=null,recResultCount=0,recResultFloor=0;
 let dict=null,dictOn=false,dictFinal='',dictPartial='';
 if(window.claude&&window.claude.use){
   window.claude.use('dictation').then(d=>{
@@ -575,19 +581,25 @@ function feedDict(){
 function startDict(){if(dict&&$('micChk').checked&&!dictOn)dict.start().catch(()=>{})}
 async function ensureMic(){
   if(micStream)return true;
-  try{
-    micStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
-    micCtx=new (window.AudioContext||window.webkitAudioContext)();
-    return true;
-  }catch(e){micOk=false;$('status').textContent='Microphone blocked — allow it in the browser, or tap Done';return false}
+  if(!micOk)return false;
+  if(!micRequest)micRequest=(async()=>{
+    try{
+      micStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
+      micCtx=new (window.AudioContext||window.webkitAudioContext)();
+      return true;
+    }catch(e){micOk=false;$('status').textContent='Microphone blocked — allow it in the browser, or tap Done';return false}
+    finally{micRequest=null}
+  })();
+  return micRequest;
 }
 function stopVAD(){if(vad){clearInterval(vad.timer);try{vad.src.disconnect()}catch(e){}vad=null}}
 async function startVAD(my){
   stopVAD();
   if(!$('micChk').checked||!micOk)return;
   if(!await ensureMic())return;
-  if(my!==runId||turnDone)return;
+  if(my!==runId||turnDone||!$('micChk').checked)return;
   try{await micCtx.resume()}catch(e){}
+  if(my!==runId||turnDone||!$('micChk').checked)return;
   const an=micCtx.createAnalyser();an.fftSize=1024;
   const src=micCtx.createMediaStreamSource(micStream);src.connect(an);
   const buf=new Float32Array(an.fftSize);
@@ -748,7 +760,7 @@ function stopAll(){
   runId++; running=false; turnDone=true;
   clearTimeout(silenceT);clearTimeout(watchdog);pre=null;
   try{speechSynthesis.cancel()}catch(e){}
-  if(rec){try{rec.onend=null;rec.abort()}catch(e){} rec=null}
+  stopRec();
   stopVAD();
   chars.forEach((c,i)=>$('f'+i)&&$('f'+i).classList.remove('active'));
   ['doneBtn','hintBtn','tellBtn'].forEach(b=>$(b).style.display='none');
@@ -898,35 +910,51 @@ function myTurn(line,my,next){
   window._tell=()=>{usedHint=true;stopRec();stopVAD();clearTimeout(silenceT);speak(line.text,ci,()=>{if(my===runId&&!turnDone){$('status').textContent='Now you say it!';if($('micChk').checked&&micOk&&!window.claude){if(SR&&srOk)startRec(my);startVAD(my)}}},my)};
   if(listen){if(SR&&srOk)startRec(my);startVAD(my)}
 }
-function stopRec(){if(rec){try{rec.onend=null;rec.abort()}catch(e){} rec=null}}
+/* Keep one recognizer alive between lines; ignore speech outside the player's turn. */
+function stopRec(){recTurn=null;recResultFloor=recResultCount}
+function releaseRec(){
+  stopRec();
+  if(rec){try{rec.onend=null;rec.abort()}catch(e){} rec=null}
+}
 function startRec(my){
-  if(!SR||!srOk)return;
-  stopRec(); sessStart=pos;
-  rec=new SR(); rec.lang=/^en/i.test(navigator.language||'')?navigator.language:'en-US'; rec.continuous=true; rec.interimResults=true; rec.maxAlternatives=3;
-  rec.onaudiostart=()=>{if(my===runId&&!turnDone)$('status').textContent='🎤 Listening… say your line'};
-  rec.onresult=e=>{
-    if(my!==runId||turnDone)return;
+  if(!SR||!srOk||!$('micChk').checked||my!==runId||turnDone)return;
+  recTurn=my;recResultFloor=recResultCount;sessStart=pos;
+  if(rec)return;
+  recResultCount=0;recResultFloor=0;
+  const activeRec=rec=new SR(); activeRec.lang=/^en/i.test(navigator.language||'')?navigator.language:'en-US'; activeRec.continuous=true; activeRec.interimResults=true; activeRec.maxAlternatives=3;
+  activeRec.onaudiostart=()=>{if(recTurn===runId&&!turnDone)$('status').textContent='🎤 Listening… say your line'};
+  activeRec.onresult=e=>{
+    if(rec!==activeRec)return;
+    recResultCount=e.results.length;
+    if(recTurn!==runId||turnDone||!$('micChk').checked){recResultFloor=recResultCount;return}
+    if(recResultFloor>=recResultCount)return;
     for(let k=0;k<3;k++){ /* also try the recogniser's 2nd and 3rd best guesses */
       const parts=[];
-      for(let i=0;i<e.results.length;i++){
+      for(let i=recResultFloor;i<e.results.length;i++){
         const r=e.results[i],s=(r[k]||r[0]).transcript.trim(),last=parts.length?parts[parts.length-1]:null;
         if(last!==null&&s.toLowerCase().startsWith(last.toLowerCase()))parts[parts.length-1]=s; /* some phones repeat the growing sentence */
         else parts.push(s);
       }
-      matchSpoken(parts.join(' '),my);
+      matchSpoken(parts.join(' '),recTurn);
     }
   };
-  rec.onend=()=>{if(my===runId&&!turnDone){try{startRec(my)}catch(e){}}};
-  rec.onerror=e=>{
+  activeRec.onend=()=>{
+    if(rec!==activeRec)return;
+    rec=null;
+    if(recTurn===runId&&!turnDone)startRec(recTurn);
+  };
+  activeRec.onerror=e=>{
+    if(rec!==activeRec)return;
     if(['not-allowed','service-not-allowed','language-not-supported'].includes(e.error)){
-      srOk=false;stopRec(); // word-matching unavailable; voice detection keeps working
+      srOk=false;releaseRec(); // word-matching unavailable; voice detection keeps working
     }else if(e.error==='network'||e.error==='audio-capture'){
       /* temporary hiccup: try again a few times instead of giving up for the whole game */
-      try{rec.onend=null;rec.abort()}catch(_){} rec=null;
-      if(++srRetry<=4)setTimeout(()=>{if(my===runId&&!turnDone&&!rec)startRec(my)},600);
+      const retryTurn=recTurn;
+      releaseRec();
+      if(++srRetry<=4)setTimeout(()=>{if(retryTurn===runId&&!turnDone&&!rec)startRec(retryTurn)},600);
     }
   };
-  try{rec.start()}catch(e){}
+  try{activeRec.start()}catch(e){if(rec===activeRec)releaseRec()}
 }
 function close(a,b){
   if(a===b)return true;
@@ -981,6 +1009,15 @@ $('skipBtn').onclick=()=>go(idx+1);
 $('doneBtn').onclick=()=>window._finishTurn&&window._finishTurn(false);
 $('hintBtn').onclick=()=>window._hint&&window._hint();
 $('tellBtn').onclick=()=>window._tell&&window._tell();
+$('micChk').onchange=()=>{
+  if(!$('micChk').checked){releaseRec();stopVAD();clearTimeout(silenceT);if(dict&&dictOn)dict.stop()}
+  else if(running&&!turnDone){if(window.claude)startDict();else{if(SR&&srOk)startRec(runId);startVAD(runId)}}
+};
+window.addEventListener('pagehide',()=>{
+  releaseRec();stopVAD();
+  if(micStream){micStream.getTracks().forEach(t=>t.stop());micStream=null}
+  if(micCtx){micCtx.close().catch(()=>{});micCtx=null}
+});
 for(let k=0;k<4;k++)slotSel(k).onchange=()=>{me[k]=slotSel(k).value;compact();buildSels();markMe();$('startBtn').disabled=!me[0];if(!running&&idx===0&&me[0])sayWho()};
 const hideChg=()=>{renderList();if(running)go(idx)};
 for(let k=0;k<4;k++)slotChk(k).onchange=hideChg;$('hideAll').onchange=hideChg;
