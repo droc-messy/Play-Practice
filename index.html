@@ -1,0 +1,1001 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Play Practice</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+:root{color-scheme:dark}
+
+*{box-sizing:border-box}
+body{margin:0;font-family:"Trebuchet MS",system-ui,sans-serif;background:#1b1530;color:#fff;min-height:100vh}
+.wrap{max-width:none;margin:0;padding-block:6px 20px;padding-left:max(10px,env(safe-area-inset-left,0px));padding-right:max(10px,env(safe-area-inset-right,0px))}
+h1{margin:6px 0 10px;font-size:26px;letter-spacing:.5px}
+h1 span{color:#ffd54f}
+details{background:#2a2147;border-radius:14px;padding:10px 14px;margin-bottom:12px}
+summary{cursor:pointer;font-weight:bold;font-size:16px}
+textarea{width:100%;height:190px;margin-top:10px;border-radius:10px;border:2px solid #4a3c7a;background:#120e22;color:#fff;padding:10px;font:14px/1.45 Consolas,monospace}
+.row{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;margin:10px 0}
+label{font-size:15px;display:flex;align-items:center;gap:6px}
+select,input[type=range]{accent-color:#ffd54f}
+select{background:#120e22;color:#fff;border:2px solid #4a3c7a;border-radius:8px;padding:6px 8px;font-size:15px}
+button{font:bold 16px "Trebuchet MS",system-ui,sans-serif;border:0;border-radius:12px;padding:10px 18px;cursor:pointer;background:#ffd54f;color:#2b1d00}
+button.sec{background:#4a3c7a;color:#fff}
+button:hover{filter:brightness(1.1)}
+button:disabled{opacity:.4;cursor:default}
+.hint{font-size:13px;color:#b9aee0}
+.layout{display:grid;grid-template-columns:272px minmax(0,1fr);gap:14px;align-items:start}
+.rail{display:flex;flex-direction:column;position:sticky;top:8px;max-height:calc(100vh - 16px);overflow:auto}
+.rail h1{order:-2;font-size:20px;line-height:1;margin:0 0 10px;padding:0 2px;white-space:nowrap;letter-spacing:.3px;text-shadow:0 2px 0 #0006}
+.rail #opts{order:-1}
+.rail details{margin-bottom:0}
+.rail textarea{height:240px}
+.main{min-width:0}
+.panel{background:#2a2147;border-radius:14px;padding:10px 12px;margin-bottom:12px;border:2px solid #4a3c7a}
+.panel .grp{display:flex;flex-direction:column;align-items:stretch;gap:6px;margin:0 0 12px}
+.panel .grp:last-child{margin-bottom:2px}
+.panel .grp select{width:100%}
+.panel label.opt{display:flex}
+@media(max-width:820px){.layout{grid-template-columns:1fr}.rail{position:static;max-height:none;overflow:visible}}
+.panel .lbl{font-weight:bold;color:#ffd54f}
+.panel select{font-size:16px}
+.panel label.opt{background:#120e22;border:2px solid #4a3c7a;border-radius:10px;padding:6px 10px;cursor:pointer}
+.panel label.opt:has(input:checked){border-color:#ffd54f;background:#3a2f63}
+.stage{position:relative;background:linear-gradient(#3b2a6b,#2a1f52 70%,#8a5a2b 70%,#6b4220);border-radius:16px;padding:22px 8px 4px;margin-top:0;overflow:hidden;border:3px solid #ffd54f}
+.stage:before{content:"";position:absolute;left:0;right:0;top:0;height:16px;background:repeating-linear-gradient(90deg,#c62828 0 28px,#b71c1c 28px 56px)}
+.cast{display:grid;grid-template-columns:repeat(auto-fit,minmax(58px,1fr));gap:6px;align-items:end}
+.fig{text-align:center;transition:opacity .25s,transform .25s;opacity:.55;position:relative}
+.fig svg{width:100%;max-width:68px;height:auto;overflow:visible}
+.fig .nm{font-size:12px;font-weight:bold;margin-top:-2px;background:#00000055;border-radius:8px;padding:2px 6px;display:inline-block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fig.active{opacity:1;animation:bounce .45s infinite alternate ease-in-out}
+.fig.me .nm{background:#ffd54f;color:#2b1d00}
+.fig.me2:after{content:"★ P2";position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:bold;color:#80deea;white-space:nowrap}
+.cast.two .fig.me:after{content:"★ P1"}
+.fig.me3:after,.fig.me4:after{position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:bold;white-space:nowrap}
+.fig.me3:after{content:"★ P3";color:#a5d6a7}
+.fig.me4:after{content:"★ P4";color:#f48fb1}
+.fig.me2 .nm,.fig.me3 .nm,.fig.me4 .nm{background:#80deea;color:#00262b}
+.fig.me2,.fig.me3,.fig.me4{opacity:.85}
+.fig.me2.active,.fig.me3.active,.fig.me4.active{opacity:1;filter:drop-shadow(0 0 12px #80deea)}
+.fig.me:after{content:"★ YOU";position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:bold;color:#ffd54f;white-space:nowrap}
+.fig.me{opacity:.85}
+.fig.me.active{opacity:1;filter:drop-shadow(0 0 12px #ffd54f)}
+@keyframes bounce{from{transform:translateY(0)}to{transform:translateY(-9px)}}
+.mouth{opacity:0}
+.fig.active .mouth{opacity:1;transform-origin:50px 58px;animation:talk .22s infinite alternate}
+.fig.active .smile{opacity:0}
+@keyframes talk{from{transform:scaleY(.35)}to{transform:scaleY(1.9)}}
+.eye{transform-origin:center;transform-box:fill-box;animation:blink 4s infinite}
+@keyframes blink{0%,94%,100%{transform:scaleY(1)}97%{transform:scaleY(.1)}}
+.armR{transform-origin:68px 82px}
+.fig.active .armR{animation:wave .4s infinite alternate ease-in-out}
+@keyframes wave{from{transform:rotate(0)}to{transform:rotate(-55deg)}}
+.caption{margin-top:12px;background:#fff;color:#222;border-radius:18px;padding:14px 18px;min-height:112px;position:relative;font-size:22px;line-height:1.4;border:4px solid #ffd54f}
+.caption .who{display:inline-block;color:#fff;font-weight:bold;font-size:14px;padding:3px 12px;border-radius:12px;margin-bottom:6px}
+.caption .note{font-size:14px;color:#777;font-style:italic;margin-bottom:4px}
+.caption.mine{background:#fff8dc;border-color:#ff9800;animation:pulse 1.2s infinite alternate}
+@keyframes pulse{from{box-shadow:0 0 0 0 #ff980088}to{box-shadow:0 0 0 10px #ff980000}}
+.w{transition:color .15s,background .15s;border-radius:4px;padding:0 1px}
+.w.ok{color:#fff;background:#43a047}
+.w.hide{color:#999}
+.dirline{font-style:italic;color:#555}
+.dirline.shared{font-style:normal;font-weight:bold;font-size:28px;color:#6a1b9a}
+.bar{height:8px;background:#2a2147;border-radius:5px;margin-top:10px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:#ffd54f;transition:width .3s}
+.controls{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;align-items:center}
+.status{margin-left:auto;font-size:14px;color:#ffd54f;font-weight:bold}
+.script{margin-top:14px;background:#2a2147;border-radius:14px;padding:200px 6px;height:clamp(300px,calc(100vh - 360px),760px);overflow:auto;position:relative;scroll-behavior:smooth}
+.ln.cur{font-size:16px;font-weight:bold;outline:2px solid #ffd54f}
+.ln:not(.cur):not(.done){opacity:.9}
+.ln{padding:6px 10px;border-radius:8px;cursor:pointer;font-size:14px}
+.ln:hover{background:#3a2f63}
+.ln.cur{background:#4a3c7a}
+.ln.mine b{color:#ffd54f}
+.ln.dir{font-style:italic;color:#b9aee0}
+.ln.dir.shared{font-style:normal;font-weight:bold;color:#ffd54f}
+.ln.done{opacity:.5}
+</style>
+
+<div class="wrap"><div class="layout"><aside class="rail">
+<h1>🎭 <span>Play</span> Practice</h1>
+
+<details id="setup" open>
+<summary>📜 Script &amp; voices</summary>
+<textarea id="scriptBox" spellcheck="false"></textarea>
+<div class="hint">One line per speech, like <b>CHARACTER: what they say</b>. Stage directions in (parentheses) or [brackets] are shown but not spoken. Cues for everyone, such as <b>(Everyone laughs.)</b> or <b>ALL: (laugh)</b>, light up the whole cast, stay on screen a little longer, and the automatic roles laugh along. Paste the whole play, then press Load.</div>
+<div class="row"><button id="loadBtn">Load script</button></div>
+<div id="voiceBox" style="display:none"></div>
+</details>
+
+<div class="panel" id="opts" style="display:none">
+<div class="grp"><span class="lbl">🎭 Who's playing? (up to 4 players, the rest are automatic)</span>
+<select id="meSel"></select>
+<select id="meSel2"></select>
+<select id="meSel3" style="display:none"></select>
+<select id="meSel4" style="display:none"></select></div>
+<div class="grp"><span class="lbl">My words</span>
+<label class="opt" id="memRow1"><input type="checkbox" id="memChk"> <span id="memLbl1">🧠 Hide my words (say them from memory)</span></label>
+<label class="opt" id="memRow2" style="display:none"><input type="checkbox" id="memChk2"> <span id="memLbl2">🧠 Hide my words</span></label>
+<label class="opt" id="memRow3" style="display:none"><input type="checkbox" id="memChk3"> <span id="memLbl3">🧠 Hide my words</span></label>
+<label class="opt" id="memRow4" style="display:none"><input type="checkbox" id="memChk4"> <span id="memLbl4">🧠 Hide my words</span></label></div>
+<div class="grp"><span class="lbl">Other roles' words</span>
+<label class="opt"><input type="checkbox" id="hideAll"> 🙈 Hide the words for all other roles</label>
+<span class="hint">Stuck? Press <b>💡 Show this phrase</b> under the stage to reveal just that line.</span></div>
+<div class="grp"><span class="lbl">Speed &amp; sound</span>
+<select id="rate"><option value="1">🐢 Slow</option><option value="1.15" selected>🚶 Medium</option><option value="1.35">🐇 Fast</option></select>
+<label><input type="checkbox" id="voiceChk" checked> Others speak out loud</label>
+<label><input type="checkbox" id="micChk" checked> Listen to me (microphone)</label></div>
+</div>
+
+</aside><main class="main">
+<div class="stage"><div class="cast" id="cast"></div></div>
+<div class="caption" id="cap"><div class="note">Load a script, pick your character, and press Start.</div></div>
+<div class="bar"><i id="prog"></i></div>
+
+<div class="controls">
+<button id="startBtn" disabled>▶ Start</button>
+<button class="sec" id="pauseBtn" disabled>⏸ Pause</button>
+<button class="sec" id="prevBtn" disabled>⏮ Back a line</button>
+<button class="sec" id="skipBtn" disabled>⏭ Skip</button>
+<button class="sec" id="micBtn" style="display:none">🎤 Mic: off</button>
+<button id="doneBtn" style="display:none">✔ I said it (Space)</button>
+<button class="sec" id="hintBtn" style="display:none">💡 Show this phrase</button>
+<button class="sec" id="tellBtn" style="display:none">🔊 Say it for me</button>
+<span class="status" id="status"></span>
+</div>
+
+<div class="script" id="list"></div>
+</main></div></div>
+
+<script>
+const SAMPLE=`(SCENE: A living room. Chairs, beanbags, game controllers, phones, a football, books and lots of snacks are scattered around.)
+(The boys are all sitting around, completely absorbed in their phones, games or devices.)
+BEN: Yes! Yes! Come on! One more level!
+NOAH: You've said "one more level" about six times.
+JACK: Ben, you've been playing that game for three hours.
+BEN: Three hours? No way.
+OLLIE: It's definitely been three hours.
+BEN: Fine. Two hours and fifty-nine minutes.
+SAM: That's basically three hours.
+BEN: Thank you, Sam.
+RYAN: Nobody talk to me. I'm filming a TikTok.
+TOM: What are you filming?
+RYAN: My reaction to getting a thousand views.
+SAM: You've only got 27 views.
+RYAN: Twenty-eight!
+SAM: One of them is probably your mother.
+RYAN: My mother does NOT follow me on social media.
+SAM: She's probably your biggest fan.
+RYAN: She doesn't even understand what I post.
+JACK: Who wants a match online?
+BEN: Not now.
+JACK: Why not?
+BEN: I'm busy.
+JACK: Doing what?
+BEN: Winning.
+MAX: My internet is faster than all of yours anyway.
+SAM: That's because your dad pays extra.
+MAX: It's not about money. It's about technology.
+SAM: That's a fancy way of saying your dad pays extra.
+(Everyone laughs. DURING THE NEXT PART NOAH GOES OFF AND COMES BACK)
+MAX: Very funny.
+OLLIE: Does anyone want a crisp?
+TOM: You've eaten half the packet already.
+OLLIE: Exactly. I'm sharing what's left.
+ETHAN: Wait.
+TOM: What?
+ETHAN: Did anyone else hear that?
+JACK: Hear what?
+ETHAN: Nothing.
+TOM: Don't do that!
+ETHAN: Do what?
+TOM: Say "nothing" after saying you heard something!
+(Suddenly all the phones/devices BEEP.)
+(Everyone freezes.)
+ETHAN: Did anyone else's WiFi disappear?
+NOAH: Yep.
+JACK: How do you know?
+NOAH: My phone just stopped working.
+SAM: That's usually a clue.
+NOAH: I thought maybe the WiFi was having a day off.
+TOM: WiFi doesn't get days off!
+NOAH: Maybe it does now.
+BEN: No. (Checks his device.)
+BEN: Wait. (Checks again.)
+BEN: No. No, no, no... NOOOOOOOOOO!
+ALL: NOOOOOOOOOOO!
+MAX: Everybody stay calm.
+TOM: I CAN'T STAY CALM!
+SAM: He's been waiting his whole life to say that.
+TOM: This is serious!
+RYAN: My video won't upload!
+JACK: I've been disconnected from my match!
+OLLIE: I can't order food!
+SAM: You'll have to eat the food in your own house.
+OLLIE: That's prehistoric.
+NOAH: There's food in the kitchen.
+OLLIE: That's exactly what I'm afraid of.
+(PANIC)
+(Everyone starts checking their phones and devices.)
+RYAN: My messages won't send!
+NOAH: Maybe your friends are enjoying the silence.
+RYAN: Very funny.
+NOAH: I wasn't joking.
+SAM: He's got a point.
+BEN: My game is frozen!
+JACK: I was about to score!
+SAM: You were losing.
+JACK: I was about to score!
+SAM: You were losing badly.
+JACK: I WAS ABOUT TO SCORE!
+TOM: This can't be happening.
+ETHAN: What if it never comes back?
+NOAH: Then we'll survive.
+ETHAN: How?
+NOAH: We'll talk to each other.
+(Everyone looks at NOAH and laughs.)
+BEN: That's a terrible idea.
+RYAN: I don't even know what to say without a keyboard.
+SAM: You could try using your mouth.
+RYAN: Very funny.
+SAM: Thank you.
+(THE INVESTIGATION)
+MAX: Nobody panic. I'll fix it.
+(Noah looks at the audience.)
+NOAH: Very professional.
+(Everyone immediately panics.)
+MAX: I said DON'T PANIC!
+TOM: WE'RE ALL GOING TO DIE!
+MAX: We're not going to die. Because I am a technology expert.
+SAM: You once tried to charge your phone in the toaster.
+MAX: That was an experiment.
+SAM: What were you experimenting with?
+MAX: Toast.
+SAM: And did the phone charge?
+MAX: No. Anyway, I'll fix the WiFi.
+(Max approaches an imaginary router.)
+MAX: Right. Everybody stand back.
+(The boys move away.)
+MAX: I'm going to reset the system.
+ETHAN: Is that safe?
+MAX: Probably not.
+(Max presses buttons.)
+MAX: Hmm.
+JACK: What?
+MAX: That's strange.
+TOM: What's strange?
+MAX: There's no lights on it.
+ETHAN: Did you break it?
+(He presses another imaginary button.)
+MAX: No.
+SAM: Excellent work, Professor.
+(THE THEORIES)
+TOM: I know what's happened. Aliens stole the WiFi.
+NOAH: Why would aliens want our WiFi?
+TOM: I don't know!
+NOAH: Maybe they're bored too.
+TOM: Because they need it.
+SAM: For what?
+TOM: Alien TikTok.
+RYAN: Wait...
+RYAN: What if aliens are more popular than me?
+SAM: They probably have better content.
+RYAN: That's not funny.
+SAM: It was a little funny.
+SAM: Maybe my granny finally learned how to use the internet and used all of it.
+NOAH: That's a lot of internet.
+SAM: She's very talented.
+NOAH: Apparently.
+JACK: Can you use up all the internet?
+SAM: Maybe my granny can.
+RYAN: Maybe...
+(Everyone looks at Ryan.)
+RYAN: Maybe the internet...
+(Pause.)
+RYAN: ...is gone forever!
+(Everyone gasps dramatically.)
+NOAH: Forever seems a bit dramatic.
+ETHAN: FOREVER?!
+TOM: NO!
+BEN: My games!
+JACK: My sports!
+OLLIE: My food delivery!
+RYAN: My followers!
+SAM: My jokes!
+OLLIE: Your jokes will probably survive.
+SAM: Thanks.
+(LIFE WITHOUT WIFI)
+(Silence.)
+(Everyone slowly sits down.)
+BEN: So...
+(Pause.)
+BEN: What do people actually do?
+NOAH: Talk? Or read?
+(Everyone stares at him and laughs.)
+BEN: Weird.
+JACK: We could play football outside.
+RYAN: Outside? I don't go outside!
+SAM: We could tell jokes.
+OLLIE: Are they good jokes?
+(Couple of jokes)
+OLLIE: We could play charades.
+ETHAN: How do you play that?
+OLLIE: You act something out without speaking.
+SAM: So... Tom's been playing charades his whole life.
+TOM: What does that mean?!
+SAM: You're very dramatic.
+TOM: I am NOT dramatic!
+(Everyone looks at him.)
+TOM: Fine. Maybe a little.
+(NEW IDEAS)
+JACK: Come on. Let's play football.
+(Jack picks up the football.)
+BEN: Fine.
+RYAN: I suppose I could survive five minutes without my phone.
+ETHAN: What if we have fun?
+SAM: That would be impossible.
+ETHAN: No, seriously.
+SAM: I'm joking.
+ETHAN: Oh.
+SAM: See? That's one of my jokes.
+ETHAN: I don't think that's how jokes work.
+SAM: I'm still practising.
+(THEY START HAVING FUN)
+(The boys begin throwing the soft football around. Possible Football Dance.)
+JACK: Pass!
+BEN: Here!
+(Ben throws it.)
+JACK: Too high!
+OLLIE: Got it!
+(Ollie catches it.)
+JACK: That's not football!
+OLLIE: It is now.
+(They laugh.)
+RYAN: Charades next! I'll go first.
+(Ryan acts something out.)
+BEN: You're a chicken!
+RYAN: No!
+JACK: A footballer?
+RYAN: No!
+SAM: A chicken playing football?
+RYAN: YES!
+(Everyone laughs.)
+OLLIE: My turn.
+(Ollie pretends to eat.)
+BEN: Eating.
+OLLIE: Correct!
+SAM: That was way too easy.
+OLLIE: I'm just too good. What's next?
+JACK: Musical chairs!
+ETHAN: Are we allowed?
+JACK: We're boys. We're always allowed.
+OLLIE: That's not how rules work.
+JACK: Ready?
+ALL: READY!
+(They race around the chairs to music.)
+TOM: I'M WINNING!
+SAM: You're going the wrong way!
+TOM: I KNOW!
+SAM: Why?!
+TOM: I PANICKED!
+(They all laugh.)
+(The boys eventually collapse into chairs and beanbags, laughing and out of breath.)
+BEN: That was actually fun.
+RYAN: Yeah.
+JACK: We should do this more often.
+OLLIE: As long as there are snacks.
+NOAH: Deal.
+ETHAN: Nobody's checked the WiFi for ages.
+SAM: Maybe that's because we're having fun.
+(Everyone looks at Sam.)
+SAM: What?
+BEN: You actually said something sensible.
+SAM: Don't get used to it.
+(THE WIFI RETURNS)
+(Suddenly...)
+(BEEP!)
+(Everyone's phones light up.)
+(They all freeze.)
+RYAN: The WiFi!
+BEN: It's back!
+(Everyone rushes for their phones.)
+(Then they stop.)
+(They look at each other.)
+BEN: Actually...
+JACK: What?
+BEN: I was having fun.
+JACK: Me too.
+RYAN: My followers can wait.
+OLLIE: Can my food delivery wait?
+JACK: You can eat what's in the kitchen.
+OLLIE: Fine.
+OLLIE: But I'm not happy about it.
+SAM: We could play more games first.
+BEN: Yeah.
+RYAN: Let's leave the phones.
+(They all put their phones down.)
+BEN: See?
+SAM: What?
+BEN: We survived.
+ETHAN: I can't believe it.
+TOM: We're stronger now.
+SAM: It's been ten minutes.
+TOM: I've changed.
+(THE TWIST)
+NOAH: By the way...
+(Everyone turns.)
+NOAH: I unplugged the WiFi ten minutes ago.
+(Everyone freezes.)
+ALL: YOU WHAT?!
+NOAH: I unplugged the WiFi.
+MAX: You made me press random buttons for 10 minutes.
+NOAH: Yep. You were doing that anyway.
+SAM: You made us think Aliens stole the internet!
+NOAH: That one was Tom's idea.
+TOM: IT WAS A GOOD THEORY.
+NOAH: It really wasn't. I just wanted to see if you remembered how to be friends and play around.
+RYAN: You made me think I was going to lose my followers!
+NOAH: You survived.
+BEN: You stopped my game!
+NOAH: And you survived.
+JACK: You stopped my match!
+NOAH: You survived.
+OLLIE: You stopped me ordering food!
+NOAH: That one was probably good for you.
+OLLIE: I don't like you anymore.
+SAM: I knew there was something suspicious about you.
+NOAH: Really?
+SAM: No.
+TOM: You nearly gave me a heart attack!
+NOAH: But you had fun.
+(The boys look at each other.)
+OLLIE: He's got a point.
+BEN: Maybe.
+RYAN: A tiny point.
+JACK: A very tiny point.
+NOAH: So... we're still friends?
+(Pause.)
+ALL: NO!
+(Everyone chases Noah around the stage.)
+NOAH: Worth it!
+(BLACKOUT.)
+(THE END)`;
+const OLDPLACEHOLDER=`(PLACEHOLDER LINES - replace this with the real script from The Day the WiFi Died.)
+BEN: Guys, the WiFi just died. Is anyone else seeing this?
+MAX: Relax, I'm a tech genius. I'll fix it in two minutes.
+TOM: Two minutes?! That is an ETERNITY! How will I survive?
+JACK: Why are we all inside anyway? Let's go play football!
+OLLIE: (munching) Can't think without snacks. Does anyone have any crisps?
+SAM: Why did the router go to school? To improve its connection!
+RYAN: Wait, if the WiFi is down, how do I post this?
+ETHAN: What if it never comes back? What if it's gone forever?
+NOAH: Everybody calm down. I think I know what to do.
+MAX: I just need to turn it off and on again.
+OLLIE: Finished the crisps. Anyone got biscuits?
+NOAH: Let's go outside and play together until it comes back.
+BEN: Hey, the WiFi is back!
+TOM: Nooo! I was just starting to enjoy the fresh air!`;
+const OLDSAMPLE=`(A sunny village square. Everyone gathers around an empty pie stand.)
+MAYOR MAPLE: Good morning, everyone! I have terrible news. The Giant Moon Pie is missing!
+BAKER BEN: But I baked it myself last night! It was as big as a wagon wheel.
+GRANNY MAE: (shaking her cane) In my day, pies stayed where you put them.
+DETECTIVE DOT: Nobody panic. I will find the pie thief. Does anyone have clues?
+PRINCESS PIP: I saw crumbs near the castle gate. A trail of crumbs!
+CAPTAIN CRUMB: Crumbs? Don't look at me! I only eat pies on Tuesdays.
+WIZARD WILF: Perhaps a spell will help. Abracadabra, show us where the pie went!
+FIONA FIDDLE: (pointing) Look! The crumbs lead all the way to the old oak tree!
+DETECTIVE DOT: Aha! Follow me, everybody, and be very quiet.
+(They tiptoe across the stage.)
+BAKER BEN: Wait. I hear snoring from behind that tree.
+PRINCESS PIP: It's a sleepy little dragon, and he's hugging the pie!
+WIZARD WILF: Poor fellow. He must have been very hungry.
+CAPTAIN CRUMB: Let's bake him a pie of his very own, so he never has to steal again.
+GRANNY MAE: Now that is the best idea I have heard all day.
+MAYOR MAPLE: Then it's settled. The whole village will bake together!
+DETECTIVE DOT: Case closed. And that, my friends, is the end of our story.`;
+
+const SKINS=['#f6d3b3','#e8b98f','#c68e63','#8d5a3b','#f2c7a5','#d9a273','#b87a50','#f8dcc2'];
+const SHIRTS=['#ef5350','#42a5f5','#66bb6a','#ffca28','#ab47bc','#ff7043','#26a69a','#5c6bc0','#78909c','#8d6e63'];
+const HAIRS=['#3e2723','#f9a825','#212121','#d84315','#6d4c41','#9e9e9e','#1a237e','#4e342e'];
+
+const PROPS={
+  ollie:`<g><circle cx="25" cy="104" r="9" fill="#d89a4a" stroke="#a8691f" stroke-width="1.5"/><circle cx="22" cy="101" r="1.6" fill="#5d3a12"/><circle cx="28" cy="104" r="1.6" fill="#5d3a12"/><circle cx="23" cy="108" r="1.6" fill="#5d3a12"/></g>`,
+  jack:`<g><circle cx="25" cy="106" r="9" fill="#fff" stroke="#333" stroke-width="1.5"/><path d="M25 97v18M16 106h18" stroke="#333" stroke-width="1.2"/></g>`,
+  ryan:`<g><rect x="19" y="96" width="12" height="20" rx="3" fill="#263238" stroke="#90a4ae" stroke-width="1"/><rect x="21" y="99" width="8" height="13" fill="#4fc3f7"/></g>`,
+  max:`<g><rect x="17" y="98" width="17" height="12" rx="2" fill="#546e7a"/><rect x="19" y="100" width="13" height="8" fill="#80deea"/></g>`
+};
+function figure(i,name){
+  const k=i%9, skin=SKINS[(k*3)%8], shirt=SHIRTS[i%10], hair=HAIRS[(k*5+1)%8];
+  let back='',front='';
+  switch(k){
+    case 0: front=`<path d="M24 44 Q24 16 50 16 Q76 16 76 44 Q64 30 50 32 Q36 30 24 44Z" fill="${hair}"/><g fill="none" stroke="#333" stroke-width="2"><circle cx="40" cy="45" r="8"/><circle cx="60" cy="45" r="8"/><path d="M48 45h4"/></g>`;break;
+    case 1: front=`<path d="M24 44 Q22 14 52 15 Q78 16 76 44 Q70 28 56 26 Q38 24 24 44Z" fill="${hair}"/><path d="M50 16 Q60 6 68 16" fill="none" stroke="${hair}" stroke-width="5" stroke-linecap="round"/>`;break;
+    case 2: front=`<path d="M24 36 Q24 12 50 12 Q76 12 76 36Z" fill="#1e88e5"/><rect x="22" y="32" width="56" height="7" rx="3" fill="#1565c0"/><path d="M24 34 Q8 34 6 42 Q8 44 24 40Z" fill="#0d47a1"/><circle cx="50" cy="12" r="3" fill="#0d47a1"/>`;break;
+    case 3: front=`<polygon points="24,42 26,18 36,30 42,8 50,28 58,8 64,30 74,18 76,42" fill="${hair}"/>`;break;
+    case 4: front=`<path d="M25 40 Q26 18 50 18 Q74 18 75 40 Q60 30 50 31 Q40 30 25 40Z" fill="${hair}" opacity=".85"/><circle cx="36" cy="52" r="1" fill="#a1623b"/><circle cx="40" cy="55" r="1" fill="#a1623b"/><circle cx="64" cy="52" r="1" fill="#a1623b"/><circle cx="60" cy="55" r="1" fill="#a1623b"/>`;break;
+    case 5: front=`<path d="M24 42 Q22 22 40 16 Q58 4 78 24 Q78 34 76 42 Q64 30 50 32 Q36 30 24 42Z" fill="${hair}"/>`;break;
+    case 6: front=[30,40,50,60,70].map((x,j)=>`<circle cx="${x}" cy="${j%2?18:24}" r="11" fill="${hair}"/>`).join('')+`<circle cx="26" cy="36" r="8" fill="${hair}"/><circle cx="74" cy="36" r="8" fill="${hair}"/><g fill="none" stroke="#333" stroke-width="2"><circle cx="40" cy="45" r="8"/><circle cx="60" cy="45" r="8"/><path d="M48 45h4"/></g>`;break;
+    case 7: front=`<path d="M24 38 Q24 10 50 10 Q76 10 76 38Z" fill="#ff7043"/><rect x="24" y="30" width="52" height="8" rx="3" fill="#bf360c"/><circle cx="50" cy="8" r="6" fill="#ffe0b2"/>`;break;
+    default: front=`<path d="M24 42 Q24 16 50 16 Q76 16 76 42 Q62 28 50 30 Q38 28 24 42Z" fill="${hair}"/><rect x="24" y="30" width="52" height="7" rx="3" fill="#1e88e5"/>`;
+  }
+  const prop=PROPS[(name||'').toLowerCase()]||'';
+  const beard='';
+  return `<svg viewBox="0 -16 100 156" aria-hidden="true">
+  <ellipse cx="50" cy="136" rx="30" ry="5" fill="#00000040"/>
+  ${back}
+  <rect x="36" y="112" width="11" height="20" rx="4" fill="#37474f"/><rect x="53" y="112" width="11" height="20" rx="4" fill="#37474f"/>
+  <ellipse cx="41" cy="133" rx="9" ry="4" fill="#212121"/><ellipse cx="59" cy="133" rx="9" ry="4" fill="#212121"/>
+  <rect class="armL" x="18" y="76" width="14" height="32" rx="7" fill="${shirt}"/><circle cx="25" cy="109" r="7" fill="${skin}"/>
+  ${prop}
+  <rect x="30" y="74" width="40" height="42" rx="13" fill="${shirt}"/>
+  <g class="armR"><rect x="68" y="76" width="14" height="32" rx="7" fill="${shirt}"/><circle cx="75" cy="109" r="7" fill="${skin}"/></g>
+  <circle cx="50" cy="46" r="27" fill="${skin}"/>
+  ${beard}
+  <circle class="eye" cx="40" cy="44" r="3.6" fill="#222"/><circle class="eye" cx="60" cy="44" r="3.6" fill="#222"/>
+  <circle cx="33" cy="54" r="4" fill="#ff8a80" opacity=".55"/><circle cx="67" cy="54" r="4" fill="#ff8a80" opacity=".55"/>
+  <path class="smile" d="M42 56 Q50 63 58 56" fill="none" stroke="#7a2230" stroke-width="2.5" stroke-linecap="round"/>
+  <ellipse class="mouth" cx="50" cy="58" rx="6.5" ry="3" fill="#7a2230"/>
+  ${front}
+  </svg>`;
+}
+
+const $=id=>document.getElementById(id);
+/* pauses between speakers shrink as the speed goes up (Slow 1x, Medium ~1.7x shorter, Fast ~2.6x shorter) */
+const gap=ms=>{const r=parseFloat($('rate').value)||1;return Math.round(ms/(r*r))};
+/* true when the next spoken line is mine: then keep the full pause so the mic doesn't hear the previous speaker's tail */
+const nextIsMine=()=>{let j=idx+1;while(lines[j]&&lines[j].dir)j++;const l=lines[j];return !!l&&isMine(l)};
+let lines=[],chars=[],profiles=[],idx=0,running=false,runId=0,meKey='',meKey2='',stats={mine:0,clean:0};
+/* up to 4 human players: me[0]..me[3] hold their character keys */
+let me=['','','',''];
+/* is this line spoken by one of the (up to two) human players? */
+function pOf(w){return w?me.indexOf(w):-1}
+const np=()=>me.filter(Boolean).length;
+const slotSel=k=>$(k?'meSel'+(k+1):'meSel'),slotChk=k=>$(k?'memChk'+(k+1):'memChk');
+function isMine(l){return !!l&&!l.dir&&(l.who==='ALL'||pOf(l.who)>=0)}
+/* should this line's words be hidden? players use their own "hide my words"; every other role uses "hide all other roles" */
+function hideFor(l){
+  if(l.who==='ALL')return me.some((c,k)=>c&&slotChk(k).checked);
+  const pk=pOf(l.who); if(pk>=0)return slotChk(pk).checked;
+  return $('hideAll').checked;
+}
+let rec=null,turnDone=false,usedHint=false,silenceT=null,watchdog=null,pos=0,sessStart=0,tWords=[],micOk=true;
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+let micStream=null,micCtx=null,vad=null,srOk=true,srRetry=0;
+let dict=null,dictOn=false,dictFinal='',dictPartial='';
+if(window.claude&&window.claude.use){
+  window.claude.use('dictation').then(d=>{
+    if(!d)return; dict=d;
+    d.onPartial(({text})=>{dictPartial=text;feedDict()});
+    d.onFinal(({text})=>{dictFinal+=' '+text;dictPartial='';feedDict()});
+    d.onState(({state})=>{dictOn=state==='listening';$('micBtn').textContent=dictOn?'🎤 Mic: on':'🎤 Mic: off'});
+    $('micBtn').style.display='';
+  }).catch(()=>{});
+}
+function feedDict(){
+  const l=lines[idx];
+  if(window._turnRun===runId&&!turnDone&&l&&isMine(l))matchSpoken(dictFinal+' '+dictPartial,runId);
+}
+function startDict(){if(dict&&$('micChk').checked&&!dictOn)dict.start().catch(()=>{})}
+async function ensureMic(){
+  if(micStream)return true;
+  try{
+    micStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
+    micCtx=new (window.AudioContext||window.webkitAudioContext)();
+    return true;
+  }catch(e){micOk=false;$('status').textContent='Microphone blocked — allow it in the browser, or tap Done';return false}
+}
+function stopVAD(){if(vad){clearInterval(vad.timer);try{vad.src.disconnect()}catch(e){}vad=null}}
+async function startVAD(my){
+  stopVAD();
+  if(!$('micChk').checked||!micOk)return;
+  if(!await ensureMic())return;
+  if(my!==runId||turnDone)return;
+  try{await micCtx.resume()}catch(e){}
+  const an=micCtx.createAnalyser();an.fftSize=1024;
+  const src=micCtx.createMediaStreamSource(micStream);src.connect(an);
+  const buf=new Float32Array(an.fftSize);
+  const need=Math.max(0.5,Math.min(tWords.length,8)*0.17);
+  let floor=0.008,voiced=0,silent=0,spoke=false,last=performance.now();const start=last;
+  const timer=setInterval(()=>{
+    if(my!==runId||turnDone){stopVAD();return}
+    an.getFloatTimeDomainData(buf);let sum=0;for(let i=0;i<buf.length;i++)sum+=buf[i]*buf[i];
+    const rms=Math.sqrt(sum/buf.length),now=performance.now(),dt=(now-last)/1000;last=now;
+    if(now-start<600){floor=Math.min(0.015,Math.max(floor,rms));return}
+    const thr=Math.max(0.025,floor*2.5);
+    if(rms>thr){voiced+=dt;silent=0;spoke=true}else if(spoke)silent+=dt;
+    const bars=Math.min(10,Math.round(rms/thr*4));
+    $('status').textContent='🎤 '+'▮'.repeat(bars)+'▯'.repeat(10-bars);
+    const nW=tWords.length;
+    /* if word-recognition is running, don't cut him off just because he paused: wait for most of the line first */
+    const wait=!rec?1.3:(pos>=Math.ceil(nW*.6)?1.5:(pos===0?3.5:5));
+    if(spoke&&silent>wait&&voiced>=need)window._finishTurn&&window._finishTurn(true);
+  },50);
+  vad={timer,src};
+}
+try{$('scriptBox').value=localStorage.getItem('playScript2')||SAMPLE}catch(e){$('scriptBox').value=SAMPLE}
+
+const esc=s=>s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const titleCase=s=>s.toLowerCase().replace(/\b[a-z]/g,c=>c.toUpperCase());
+const NUMW={'0':'zero','1':'one','2':'two','3':'three','4':'four','5':'five','6':'six','7':'seven','8':'eight','9':'nine','10':'ten'};
+const normW=w=>{const x=w.toLowerCase().replace(/[^a-z0-9]/g,'').replace(/(.)\1{2,}/g,'$1');return x==='ok'?'okay':(NUMW[x]||x)};
+function words(t){return t.split(/\s+/).map(normW).filter(Boolean)}
+
+function parse(text){
+  const out=[],names=new Map();
+  for(const raw of text.split(/\r?\n/)){
+    const s=raw.replace(/\*/g,'').replace(/^\s*#+\s*/,'').trim(); if(!s)continue;
+    const m=s.match(/^([A-Za-z][A-Za-z0-9 .'\-]{0,30}?)\s*:\s*(.+)$/);
+    if(m){
+      let body=m[2],notes=[];
+      body=body.replace(/\(([^)]*)\)|\[([^\]]*)\]/g,(_,a,b)=>{notes.push((a||b).trim());return ' '}).replace(/\s+/g,' ').trim();
+      const key=m[1].trim().toUpperCase();
+      if(key!=='ALL'&&!names.has(key))names.set(key,titleCase(m[1].trim()));
+      if(body) out.push({who:key,text:body,note:notes.join(' ')});
+      else out.push({dir:true,text:`${key==='ALL'?'Everyone':names.get(key)} ${notes.join(' ')}`});
+    } else if(/^[(\[]/.test(s)){
+      out.push({dir:true,text:s.replace(/^[(\[]|[)\]]$/g,'').trim()});
+    } else if(out.length&&!out[out.length-1].dir){
+      out[out.length-1].text+=' '+s;
+    } else out.push({dir:true,text:s});
+  }
+  return {out,names};
+}
+
+/* a stage direction aimed at the whole group, e.g. "Everyone laughs." / "They all laugh." */
+const isShared=t=>/^\s*(everyone|everybody|all\b|they\b|the boys|the group|together|both\b)/i.test(t);
+function loadScript(){
+  const text=$('scriptBox').value;
+  try{localStorage.setItem('playScript2',text)}catch(e){}
+  const {out,names}=parse(text);
+  if(!out.some(l=>!l.dir)){$('cap').innerHTML='<div class="note">No lines found. Use the format  NAME: line</div>';return}
+  stopAll();
+  lines=out; chars=[...names.keys()]; idx=0; stats={mine:0,clean:0};
+  profiles=chars.map((c,i)=>({name:names.get(c),pitch:[1,.94,1.08,.97,1.04,1.1,.92,1.02,.98,1.06][i%10],rate:[1,.96,1.04,.98,1.02,1.05,.95,1][i%8]}));
+  assignVoices();renderVoiceBox();$('voiceBox').style.display='block';
+  $('cast').innerHTML=chars.map((c,i)=>`<div class="fig" id="f${i}">${figure(i,names.get(c))}<span class="nm">${esc(names.get(c))}</span></div>`).join('');
+  me=me.map(c=>chars.includes(c)?c:'');
+  compact(); buildSels(); markMe();
+  $('opts').style.display='block';
+  renderList(); setCaption(null);
+  $('cap').innerHTML='<div class="note">Ready! Pick your character, then press Start. '+(chars.length)+' characters, '+lines.filter(l=>!l.dir).length+' lines.</div>';
+  $('startBtn').disabled=!me[0];
+  $('setup').open=false; $('prog').style.width='0';
+}
+
+/* close gaps if a player slot was cleared, keeping each player's own "hide my words" setting with them */
+function compact(){
+  const ps=me.map((c,k)=>c?{c,h:slotChk(k).checked}:null).filter(Boolean);
+  for(let k=0;k<4;k++){me[k]=ps[k]?ps[k].c:'';slotChk(k).checked=ps[k]?ps[k].h:false}
+}
+function buildSels(){
+  for(let k=0;k<4;k++){
+    const taken=me.filter((c,j)=>c&&j!==k);
+    const opts=chars.filter(c=>!taken.includes(c)).map(c=>`<option value="${esc(c)}">${esc(profiles[chars.indexOf(c)].name)}</option>`).join('');
+    const head=k===0?'<option value="" disabled>— choose your character —</option>':`<option value="">👥 Add player ${k+1} (optional)</option>`;
+    const s=slotSel(k); s.innerHTML=head+opts; s.value=me[k]||'';
+    s.style.display=(k<2||me[k-1])?'':'none';
+  }
+}
+function sayWho(){
+  const ps=me.filter(Boolean).map((c,k)=>esc(profiles[chars.indexOf(c)].name));
+  $('cap').innerHTML='<div class="note">'+(ps.length>1?'Players: '+ps.map((n,k)=>n+' (P'+(k+1)+')').join(', '):'You are '+ps[0])+'. Press Start when you are ready!</div>';
+}
+function markMe(){
+  const cls=['me','me2','me3','me4'];
+  chars.forEach((c,i)=>{const f=$('f'+i);cls.forEach((cl,k)=>f.classList.toggle(cl,!!me[k]&&c===me[k]))});
+  $('cast').classList.toggle('two',np()>1);
+  for(let k=0;k<4;k++){
+    $('memRow'+(k+1)).style.display=(k===0||me[k])?'':'none';
+    $('memLbl'+(k+1)).textContent=(np()>1&&me[k])?'🧠 Player '+(k+1)+' ('+profiles[chars.indexOf(me[k])].name+'): hide my words':'🧠 Hide my words (say them from memory)';
+  }
+  renderList();
+}
+
+function renderList(){
+  $('list').innerHTML=lines.map((l,i)=>l.dir
+    ?`<div class="ln dir${isShared(l.text)?' shared':''}" data-i="${i}">${isShared(l.text)?'🎭 ':''}(${esc(l.text)})</div>`
+    :`<div class="ln ${isMine(l)?'mine':''}" data-i="${i}"><b>${l.who==='ALL'?'All':esc(profiles[chars.indexOf(l.who)].name)}:</b> ${hideFor(l)?'<i>🙈 hidden…</i>':esc(l.text)}</div>`).join('');
+  [...$('list').children].forEach(el=>el.onclick=()=>{go(+el.dataset.i)});
+  hilite();
+}
+function hilite(){
+  [...$('list').children].forEach((el,i)=>{el.classList.toggle('cur',i===idx);el.classList.toggle('done',i<idx)});
+  const L=$('list'),cur=L.children[idx];
+  if(cur)L.scrollTop=cur.offsetTop-L.clientHeight/2+cur.offsetHeight/2;
+  $('prog').style.width=(100*idx/lines.length)+'%';
+}
+
+/* voices */
+let voices=[];
+const MALE=/\b(david|mark|guy|ryan|thomas|george|daniel|alfie|ethan|brian|eric|roger|steffan|james|oliver|liam|connor|noah|christopher|davis|jason|tony|arthur|male)\b/i;
+function rankVoice(v){
+  let s=0,n=v.name;
+  if(/natural|neural|online/i.test(n))s+=100;
+  if(/google/i.test(n))s+=40;
+  if(/^en[-_](GB|US|AU|IE)/i.test(v.lang))s+=10;
+  if(/en[-_]GB/i.test(v.lang))s+=3;
+  if(/espeak|compact/i.test(n))s-=50;
+  if(MALE.test(n))s+=25;
+  return s;
+}
+function loadVoices(){
+  voices=(speechSynthesis.getVoices()||[]).filter(v=>/^en/i.test(v.lang)).sort((a,b)=>rankVoice(b)-rankVoice(a));
+  if(profiles.length){assignVoices();renderVoiceBox()}
+}
+function assignVoices(){
+  /* only hand out the human-sounding voices; reuse them if there are fewer than characters */
+  let pool=voices.filter(v=>/natural|neural|online|google/i.test(v.name));
+  if(!pool.length)pool=voices;
+  profiles.forEach((p,i)=>{
+    if(!p.chosen&&pool.length)p.voiceName=pool[i%pool.length].name;
+  });
+}
+function renderVoiceBox(){
+  const box=$('voiceBox'); if(!box)return;
+  if(!voices.length){box.innerHTML='<div class="hint">No voices found on this device.</div>';return}
+  box.innerHTML='<div class="hint" style="margin-bottom:6px">Voices — pick a different one per character (voices marked Natural/Online sound the most human; Microsoft Edge has the best ones built in).</div>'+
+   profiles.map((p,i)=>`<label style="display:inline-flex;margin:3px 14px 3px 0">${esc(p.name)}: <select data-i="${i}">${voices.map(v=>`<option ${v.name===p.voiceName?'selected':''}>${esc(v.name)}</option>`).join('')}</select></label>`).join('');
+  box.querySelectorAll('select').forEach(s=>s.onchange=()=>{
+    const p=profiles[+s.dataset.i];p.voiceName=s.value;p.chosen=true;
+    try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance("Hi, I'm "+p.name+".");u.voice=voices.find(v=>v.name===s.value);u.pitch=p.pitch;u.rate=p.rate*parseFloat($('rate').value);window._u=u;speechSynthesis.speak(u)}catch(e){}
+  });
+}
+if('speechSynthesis' in window){loadVoices();speechSynthesis.onvoiceschanged=loadVoices}
+
+function setCaption(line,mine){
+  const cap=$('cap'); cap.classList.toggle('mine',!!mine);
+  chars.forEach((c,i)=>$('f'+i).classList.toggle('active',!!line&&!line.dir&&line.who===c));
+}
+
+function stopAll(){
+  runId++; running=false; turnDone=true;
+  clearTimeout(silenceT);clearTimeout(watchdog);pre=null;
+  try{speechSynthesis.cancel()}catch(e){}
+  if(rec){try{rec.onend=null;rec.abort()}catch(e){} rec=null}
+  stopVAD();
+  chars.forEach((c,i)=>$('f'+i)&&$('f'+i).classList.remove('active'));
+  ['doneBtn','hintBtn','tellBtn'].forEach(b=>$(b).style.display='none');
+  $('status').textContent='';
+}
+
+function go(i){
+  stopAll(); idx=Math.max(0,Math.min(lines.length,i)); running=true; $('pauseBtn').disabled=false;$('prevBtn').disabled=false;$('skipBtn').disabled=false;$('pauseBtn').textContent='⏸ Pause';
+  $('startBtn').textContent='↺ Restart from top';
+  play();
+}
+
+function play(){
+  hilite();
+  if(idx>=lines.length)return finish();
+  const my=++runId, line=lines[idx]; $('hintBtn').style.display='none';
+  const next=()=>{if(my===runId){idx++;play()}};
+  if(line.dir){
+    setCaption(line);
+    if(isShared(line.text)){
+      /* a cue for everyone, e.g. "Everyone laughs": show it big, animate the whole cast, and let the automatic roles join in */
+      chars.forEach((c,i)=>$('f'+i).classList.add('active'));
+      $('cap').innerHTML=`<div class="dirline shared">🎭 EVERYONE — ${esc(line.text)}</div>`;
+      const hold=gap(Math.max(2800,line.text.length*70)),t0=Date.now();
+      const lci=chars.findIndex(c=>pOf(c)<0);
+      if(/laugh|giggl|chuckl|cackl|snigger/i.test(line.text)&&lci>=0&&$('voiceChk').checked&&'speechSynthesis' in window){
+        speak('Ha ha ha ha ha!',lci,()=>setTimeout(next,Math.max(0,hold-(Date.now()-t0))),my);
+      }else setTimeout(next,hold);
+      return;
+    }
+    $('cap').innerHTML=`<div class="dirline">🎬 ${esc(line.text)}</div>`;
+    setTimeout(next,gap(Math.max(1500,line.text.length*45))); return;
+  }
+  if(line.who==='ALL'){
+    setCaption(line,true);
+    chars.forEach((c,i)=>$('f'+i).classList.add('active'));
+    return myTurn(line,my,next);
+  }
+  const ci=chars.indexOf(line.who);
+  setCaption(line,isMine(line));
+  if(isMine(line)) return myTurn(line,my,next);
+  $('cap').innerHTML=`<span class="who" style="background:${SHIRTS[ci%10]}">${esc(profiles[ci].name)}</span>${line.note?`<div class="note">(${esc(line.note)})</div>`:''}<div id="theirwords">${hideFor(line)?esc(line.text.split(/\s+/).map(()=>'•••').join(' ')):esc(line.text)}</div>`;
+  $('hintBtn').style.display=hideFor(line)?'':'none';
+  window._hint=()=>{const e=$('theirwords');if(e)e.textContent=line.text};
+  speak(line.text,ci,next,my);
+}
+
+/* build a speech utterance for one character */
+function mkUtt(text,ci,useChosen){
+  const p=profiles[ci],u=new SpeechSynthesisUtterance(text);
+  const vv=useChosen?voices.find(v=>v.name===p.voiceName):(voices.find(v=>v.localService&&/^en/i.test(v.lang))||null);
+  if(vv){u.voice=vv;u.lang=vv.lang}else u.lang='en-GB';
+  const good=vv&&/natural|neural|online/i.test(vv.name);
+  u.pitch=good?1:1+(p.pitch-1)*.5; u.rate=(1+(p.rate-1)*.5)*parseFloat($('rate').value);
+  return u;
+}
+/* while one non-player line is playing, hand the NEXT non-player line to the speech engine so there is no gap between them */
+const PREQUEUE=false; /* queue-ahead made Edge slower, so it is switched off */
+let pre=null;
+function preQueue(my){
+  if(!PREQUEUE||pre||my!==runId||!$('voiceChk').checked||!('speechSynthesis' in window))return;
+  const i=idx+1,l=lines[i];
+  if(!l||l.dir||isMine(l))return;
+  const ci=chars.indexOf(l.who); if(ci<0)return;
+  const u=mkUtt(l.text,ci,true),st={i,text:l.text,state:'queued',onend:null,onerror:null};
+  u.onstart=()=>{if(st.state==='queued')st.state='started'};
+  u.onend=()=>{st.state='ended';if(st.onend)st.onend()};
+  u.onerror=e=>{if(e.error==='canceled'||e.error==='interrupted')return;st.state='error';if(st.onerror)st.onerror()};
+  pre=st;
+  try{speechSynthesis.speak(u)}catch(e){pre=null}
+}
+function speak(text,ci,cb,my){
+  const n=words(text).length;
+  let fired=false; const once=()=>{if(fired||my!==runId)return;fired=true;clearTimeout(watchdog);cb()};
+  if(!$('voiceChk').checked||!('speechSynthesis' in window)){watchdog=setTimeout(once,gap(Math.max(1400,n*380)+500));return}
+  const done=()=>setTimeout(once,nextIsMine()?450:gap(40));
+  const st=pre; pre=null;
+  if(st&&st.i===idx&&st.text===text&&st.state!=='error'&&(st.state==='ended'||speechSynthesis.speaking||speechSynthesis.pending)){
+    /* this line is already queued in the speech engine: no gap */
+    watchdog=setTimeout(once,Math.max(8000,n*900/parseFloat($('rate').value))+4000);
+    if(!isMine(lines[idx]))preQueue(my);
+    if(st.state==='ended'){done();return}
+    st.onend=done; st.onerror=()=>normal();
+    return;
+  }
+  return normal();
+  function normal(){
+  const p=profiles[ci];
+  let token=0,startT=null;
+  const attempt=(useChosen)=>{
+    if(fired||my!==runId)return;
+    const t=++token; clearTimeout(startT);
+    const u=mkUtt(text,ci,useChosen);
+    let started=false;
+    const retry=()=>{
+      if(t!==token)return; token++; pre=null;
+      try{speechSynthesis.cancel()}catch(e){}
+      if(useChosen)setTimeout(()=>attempt(false),100);
+      else{$('status').textContent='🔇 Browser speech failed - check device sound/voices';once()}
+    };
+    u.onstart=()=>{if(t===token){started=true;clearTimeout(startT)}};
+    u.onend=()=>{if(t!==token)return;if(started||!useChosen)setTimeout(once,nextIsMine()?450:gap(40));else retry()};
+    u.onerror=e=>{if(t!==token)return;if(e.error==='canceled'||e.error==='interrupted')return;retry()};
+    startT=setTimeout(()=>{if(t===token&&!started)retry()},3000);
+    window._u=u;
+    try{speechSynthesis.resume()}catch(e){}
+    speechSynthesis.speak(u);
+    if(!isMine(lines[idx]))preQueue(my);
+  };
+  const busy=speechSynthesis.speaking||speechSynthesis.pending; /* only cancel (and wait) if something is still playing */
+  try{if(busy)speechSynthesis.cancel()}catch(e){}
+  setTimeout(()=>attempt(true),busy?80:0);
+  watchdog=setTimeout(once,Math.max(8000,n*900/parseFloat($('rate').value))+4000);
+  }
+}
+
+/* my turn */
+function renderWords(line,reveal){
+  const mem=hideFor(line)&&!reveal;
+  return line.text.split(/\s+/).map((w,i)=>{
+    const shown=mem?'•••':w;
+    return `<span class="w ${mem?'hide':''}" data-i="${i}" data-full="${esc(w)}">${esc(shown)}</span>`;
+  }).join(' ');
+}
+function myTurn(line,my,next){
+  const ci=Math.max(0,chars.indexOf(line.who));
+  const label=line.who==='ALL'?'EVERYONE TOGETHER — shout it!':(np()>1?'PLAYER '+(pOf(line.who)+1)+' — ':'YOUR TURN — ')+profiles[ci].name;
+  turnDone=false; usedHint=false; pos=0; sessStart=0; srRetry=0; tWords=words(line.text);
+  $('cap').innerHTML=`<span class="who" style="background:#ff9800">${esc(label)}</span>${line.note?`<div class="note">(${esc(line.note)})</div>`:''}<div id="mywords">${renderWords(line)}</div>`;
+  $('doneBtn').style.display='';
+  $('hintBtn').style.display=hideFor(line)?'':'none';
+  $('tellBtn').style.display='';
+  const viewer=!!window.claude;
+  const listen=$('micChk').checked&&micOk&&!viewer;
+  window._turnRun=my;dictFinal='';dictPartial='';
+  $('status').textContent=(listen&&SR&&srOk)?'⏳ Getting ready…':(listen||(viewer&&dict&&dictOn&&$('micChk').checked))?'🎤 Listening… say your line':'Say your line, then tap Done';
+  window._finishTurn=(heard)=>{
+    if(turnDone||my!==runId)return; turnDone=true;
+    clearTimeout(silenceT); stopRec(); stopVAD();
+    stats.mine++; if(!usedHint)stats.clean++;
+    document.querySelectorAll('#mywords .w').forEach(s=>{s.classList.add('ok');s.classList.remove('hide');s.textContent=s.dataset.full});
+    $('status').textContent='⭐ Nice!';
+    ['doneBtn','hintBtn','tellBtn'].forEach(b=>$(b).style.display='none');
+    setTimeout(()=>{if(my===runId){idx++;play()}},heard?gap(650):gap(350));
+  };
+  window._hint=()=>{usedHint=true;document.querySelectorAll('#mywords .w').forEach(s=>{if(!s.classList.contains('ok')){s.classList.remove('hide');s.textContent=s.dataset.full}})};
+  window._tell=()=>{usedHint=true;stopRec();stopVAD();clearTimeout(silenceT);speak(line.text,ci,()=>{if(my===runId&&!turnDone){$('status').textContent='Now you say it!';if($('micChk').checked&&micOk&&!window.claude){if(SR&&srOk)startRec(my);startVAD(my)}}},my)};
+  if(listen){if(SR&&srOk)startRec(my);startVAD(my)}
+}
+function stopRec(){if(rec){try{rec.onend=null;rec.abort()}catch(e){} rec=null}}
+function startRec(my){
+  if(!SR||!srOk)return;
+  stopRec(); sessStart=pos;
+  rec=new SR(); rec.lang=/^en/i.test(navigator.language||'')?navigator.language:'en-US'; rec.continuous=true; rec.interimResults=true; rec.maxAlternatives=3;
+  rec.onaudiostart=()=>{if(my===runId&&!turnDone)$('status').textContent='🎤 Listening… say your line'};
+  rec.onresult=e=>{
+    if(my!==runId||turnDone)return;
+    for(let k=0;k<3;k++){ /* also try the recogniser's 2nd and 3rd best guesses */
+      const parts=[];
+      for(let i=0;i<e.results.length;i++){
+        const r=e.results[i],s=(r[k]||r[0]).transcript.trim(),last=parts.length?parts[parts.length-1]:null;
+        if(last!==null&&s.toLowerCase().startsWith(last.toLowerCase()))parts[parts.length-1]=s; /* some phones repeat the growing sentence */
+        else parts.push(s);
+      }
+      matchSpoken(parts.join(' '),my);
+    }
+  };
+  rec.onend=()=>{if(my===runId&&!turnDone){try{startRec(my)}catch(e){}}};
+  rec.onerror=e=>{
+    if(['not-allowed','service-not-allowed','language-not-supported'].includes(e.error)){
+      srOk=false;stopRec(); // word-matching unavailable; voice detection keeps working
+    }else if(e.error==='network'||e.error==='audio-capture'){
+      /* temporary hiccup: try again a few times instead of giving up for the whole game */
+      try{rec.onend=null;rec.abort()}catch(_){} rec=null;
+      if(++srRetry<=4)setTimeout(()=>{if(my===runId&&!turnDone&&!rec)startRec(my)},600);
+    }
+  };
+  try{rec.start()}catch(e){}
+}
+function close(a,b){
+  if(a===b)return true;
+  if(a.length<4||b.length<4)return false;
+  if(Math.abs(a.length-b.length)>1)return false;
+  let d=0,i=0,j=0;
+  while(i<a.length&&j<b.length){
+    if(a[i]===b[j]){i++;j++;continue}
+    if(++d>1)return false;
+    if(a.length>b.length)i++;else if(b.length>a.length)j++;else{i++;j++}
+  }
+  return d+(a.length-i)+(b.length-j)<=1;
+}
+function matchSpoken(t,my){
+  const sp=words(t); let p=sessStart;
+  for(const w of sp){
+    const win=w.length>=4?7:3;
+    for(let j=p;j<Math.min(tWords.length,p+win);j++){
+      if(close(w,tWords[j])){p=j+1;break}
+    }
+  }
+  pos=Math.max(pos,p);
+  const spans=document.querySelectorAll('#mywords .w');
+  spans.forEach((s,i)=>{if(i<pos){s.classList.add('ok');s.classList.remove('hide');s.textContent=s.dataset.full}});
+  $('prog').style.width=(100*(idx+pos/Math.max(1,tWords.length))/lines.length)+'%';
+  clearTimeout(silenceT);
+  const nT=tWords.length;
+  if(pos>=nT) silenceT=setTimeout(()=>window._finishTurn(true),600);
+  else if(pos>=Math.ceil(nT*.8)) silenceT=setTimeout(()=>window._finishTurn(true),1800);
+  else if(pos>=Math.ceil(nT*.5)) silenceT=setTimeout(()=>window._finishTurn(true),4000);
+}
+
+function finish(){
+  stopAll(); $('prog').style.width='100%';
+  chars.forEach((c,i)=>$('f'+i).classList.add('active'));
+  setTimeout(()=>chars.forEach((c,i)=>$('f'+i)&&$('f'+i).classList.remove('active')),1800);
+  $('cap').classList.remove('mine');
+  $('cap').innerHTML=`<div style="text-align:center"><div style="font-size:28px;font-weight:bold">🎉 Curtain call!</div>You said <b>${stats.mine}</b> lines and got <b>${stats.clean}</b> without any help. ${stats.mine&&stats.clean===stats.mine?'<br>Perfect run! ★★★':'<br>Press Restart and try again!'}</div>`;
+  $('pauseBtn').disabled=true;$('skipBtn').disabled=true;
+}
+
+/* controls */
+$('loadBtn').onclick=loadScript;
+$('startBtn').onclick=()=>{if(!me[0]){$('status').textContent='Pick your character first';return}if(window.claude)startDict();else if($('micChk').checked)ensureMic();go(0)};
+$('micBtn').onclick=()=>{if(!dict)return;if(dictOn)dict.stop();else dict.start().catch(()=>{})};
+$('pauseBtn').onclick=()=>{
+  if(running){stopAll();$('pauseBtn').textContent='▶ Resume';$('status').textContent='Paused'}
+  else{running=true;$('pauseBtn').textContent='⏸ Pause';play()}
+};
+$('prevBtn').onclick=()=>{let i=idx-1;while(i>0&&lines[i].dir)i--;go(Math.max(0,i))};
+$('skipBtn').onclick=()=>go(idx+1);
+$('doneBtn').onclick=()=>window._finishTurn&&window._finishTurn(false);
+$('hintBtn').onclick=()=>window._hint&&window._hint();
+$('tellBtn').onclick=()=>window._tell&&window._tell();
+for(let k=0;k<4;k++)slotSel(k).onchange=()=>{me[k]=slotSel(k).value;compact();buildSels();markMe();$('startBtn').disabled=!me[0];if(!running&&idx===0&&me[0])sayWho()};
+const hideChg=()=>{renderList();if(running)go(idx)};
+for(let k=0;k<4;k++)slotChk(k).onchange=hideChg;$('hideAll').onchange=hideChg;
+const typing=t=>t.tagName==='TEXTAREA'||t.tagName==='INPUT'||t.tagName==='SELECT';
+document.addEventListener('click',e=>{const b=e.target.closest('button');if(b)b.blur()});
+document.addEventListener('keydown',e=>{
+  if(e.code==='Space'&&!typing(e.target)){
+    e.preventDefault(); if(running&&!turnDone&&window._finishTurn)window._finishTurn(false);
+  }
+});
+document.addEventListener('keyup',e=>{if(e.code==='Space'&&!typing(e.target))e.preventDefault()});
+
+
+/* preview cast before loading */
+loadScript();
+</script>
+
+</body></html>
