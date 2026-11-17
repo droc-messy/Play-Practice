@@ -15,7 +15,7 @@ No build step, no dependencies: open `index.html` in a browser, or host it on an
 - **Hide the words for all other roles:** hides everyone who is not a player.
 - **Shared cues:** directions aimed at the whole cast, such as `(Everyone laughs.)` or `ALL: (laugh)`, light up the whole stage, stay on screen longer, and the automatic roles laugh along.
 - **Three speeds:** Slow, Medium and Fast. Faster speeds also shorten the pauses between speakers.
-- **Voices:** each character gets a distinct voice from the voices installed in the browser, and you can change any of them under **📜 Script & voices**.
+- **Voices:** characters use regular voices installed in the browser, reusing them when needed rather than automatically assigning novelty voices (including for Max and Sam). You can change any character's voice under **📜 Script & voices**.
 - **Curtain call:** at the end it shows how many lines you said and how many you managed without help.
 
 ## Using it
@@ -31,6 +31,7 @@ Your script is saved in the browser (`localStorage`) so it is still there next t
 
 - **Best experience:** Chrome or Edge. They support both speech output and microphone word recognition.
 - **Edge** has free, human-sounding "Natural" voices. If no sound plays, the app falls back to a local voice.
+- **iPhone (Safari and Chrome):** tapping **Start**, **Resume**, or turning speech back on initialises speech directly from that tap, so automatic roles can speak without first pressing **Say it for me**. Default and fallback voice selection favours regular voices and excludes known novelty voices; manually selected voices are kept.
 - **Safari and Firefox:** speech output works, but word recognition is limited or missing. Use the **I said it** button or the space bar to move on.
 - Microphone access requires HTTPS (or `localhost`).
 - The microphone stream and speech recognizer are reused between lines during a rehearsal, so each character's turn does not start a fresh microphone request. Recognition results are only used during a player's turn. Untick **Listen to me** to stop speech recognition; leaving the page releases the microphone.

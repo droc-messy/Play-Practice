@@ -717,10 +717,14 @@ function hilite(){
 /* voices */
 let voices=[];
 const MALE=/\b(david|mark|guy|ryan|thomas|george|daniel|alfie|ethan|brian|eric|roger|steffan|james|oliver|liam|connor|noah|christopher|davis|jason|tony|arthur|male)\b/i;
+const REGULAR_VOICE=/\b(aaron|alex|arthur|ava|catherine|daniel|gordon|karen|kate|lee|moira|nicky|oliver|rishi|samantha|sangeeta|serena|tessa|tom|victoria)\b/i;
+const NOVELTY_VOICE=/eloquence|novelty|\b(albert|bad news|bahh|bells|boing|bubbles|cellos|deranged|eddy|flo|good news|grandma|grandpa|hysterical|jester|junior|organ|ralph|reed|rocko|sandy|shelley|superstar|trinoids|whisper|wobble|zarvox)\b/i;
 function rankVoice(v){
   let s=0,n=v.name;
   if(/natural|neural|online/i.test(n))s+=100;
   if(/google/i.test(n))s+=40;
+  if(/premium|enhanced/i.test(n))s+=60;
+  if(REGULAR_VOICE.test(n))s+=20;
   if(/^en[-_](GB|US|AU|IE)/i.test(v.lang))s+=10;
   if(/en[-_]GB/i.test(v.lang))s+=3;
   if(/espeak|compact/i.test(n))s-=50;
@@ -732,12 +736,16 @@ function loadVoices(){
   if(profiles.length){assignVoices();renderVoiceBox()}
 }
 function assignVoices(){
-  /* only hand out the human-sounding voices; reuse them if there are fewer than characters */
-  let pool=voices.filter(v=>/natural|neural|online|google/i.test(v.name));
-  if(!pool.length)pool=voices;
+  /* Reuse regular voices rather than assigning novelty voices to later roles. */
+  const pool=regularVoices(voices);
   profiles.forEach((p,i)=>{
     if(!p.chosen&&pool.length)p.voiceName=pool[i%pool.length].name;
   });
+}
+function regularVoices(available){
+  const safe=available.filter(v=>!NOVELTY_VOICE.test(v.name+' '+(v.voiceURI||'')));
+  const preferred=safe.filter(v=>/natural|neural|online|google|premium|enhanced/i.test(v.name)||REGULAR_VOICE.test(v.name));
+  return preferred.length?preferred:safe;
 }
 function renderVoiceBox(){
   const box=$('voiceBox'); if(!box)return;
@@ -750,6 +758,17 @@ function renderVoiceBox(){
   });
 }
 if('speechSynthesis' in window){loadVoices();speechSynthesis.onvoiceschanged=loadVoices}
+
+/* iPhone requires speak() inside the tap, before timers or microphone promises. */
+function enableSpeech(){
+  if(!$('voiceChk').checked||!('speechSynthesis' in window))return;
+  try{
+    const u=new SpeechSynthesisUtterance('Ready');u.volume=0;
+    const v=regularVoices(voices)[0];if(v){u.voice=v;u.lang=v.lang}else u.lang='en-GB';
+    window._speechPrimer=u;
+    speechSynthesis.resume();speechSynthesis.speak(u);
+  }catch(e){}
+}
 
 function setCaption(line,mine){
   const cap=$('cap'); cap.classList.toggle('mine',!!mine);
@@ -770,6 +789,7 @@ function stopAll(){
 function go(i){
   stopAll(); idx=Math.max(0,Math.min(lines.length,i)); running=true; $('pauseBtn').disabled=false;$('prevBtn').disabled=false;$('skipBtn').disabled=false;$('pauseBtn').textContent='⏸ Pause';
   $('startBtn').textContent='↺ Restart from top';
+  enableSpeech();
   play();
 }
 
@@ -811,7 +831,7 @@ function play(){
 /* build a speech utterance for one character */
 function mkUtt(text,ci,useChosen){
   const p=profiles[ci],u=new SpeechSynthesisUtterance(text);
-  const vv=useChosen?voices.find(v=>v.name===p.voiceName):(voices.find(v=>v.localService&&/^en/i.test(v.lang))||null);
+  const vv=useChosen?voices.find(v=>v.name===p.voiceName):(regularVoices(voices.filter(v=>v.localService))[0]||null);
   if(vv){u.voice=vv;u.lang=vv.lang}else u.lang='en-GB';
   const good=vv&&/natural|neural|online/i.test(vv.name);
   u.pitch=good?1:1+(p.pitch-1)*.5; u.rate=(1+(p.rate-1)*.5)*parseFloat($('rate').value);
@@ -872,7 +892,7 @@ function speak(text,ci,cb,my){
   };
   const busy=speechSynthesis.speaking||speechSynthesis.pending; /* only cancel (and wait) if something is still playing */
   try{if(busy)speechSynthesis.cancel()}catch(e){}
-  setTimeout(()=>attempt(true),busy?80:0);
+  if(busy)setTimeout(()=>attempt(true),80);else attempt(true);
   watchdog=setTimeout(once,Math.max(8000,n*900/parseFloat($('rate').value))+4000);
   }
 }
@@ -1002,13 +1022,14 @@ $('startBtn').onclick=()=>{if(!me[0]){$('status').textContent='Pick your charact
 $('micBtn').onclick=()=>{if(!dict)return;if(dictOn)dict.stop();else dict.start().catch(()=>{})};
 $('pauseBtn').onclick=()=>{
   if(running){stopAll();$('pauseBtn').textContent='▶ Resume';$('status').textContent='Paused'}
-  else{running=true;$('pauseBtn').textContent='⏸ Pause';play()}
+  else{running=true;$('pauseBtn').textContent='⏸ Pause';enableSpeech();play()}
 };
 $('prevBtn').onclick=()=>{let i=idx-1;while(i>0&&lines[i].dir)i--;go(Math.max(0,i))};
 $('skipBtn').onclick=()=>go(idx+1);
 $('doneBtn').onclick=()=>window._finishTurn&&window._finishTurn(false);
 $('hintBtn').onclick=()=>window._hint&&window._hint();
 $('tellBtn').onclick=()=>window._tell&&window._tell();
+$('voiceChk').onchange=()=>{if($('voiceChk').checked)enableSpeech()};
 $('micChk').onchange=()=>{
   if(!$('micChk').checked){releaseRec();stopVAD();clearTimeout(silenceT);if(dict&&dictOn)dict.stop()}
   else if(running&&!turnDone){if(window.claude)startDict();else{if(SR&&srOk)startRec(runId);startVAD(runId)}}
