@@ -40,4 +40,6 @@ Your script is saved in the browser (`localStorage`) so it is still there next t
 
 ## Hosting
 
+Public app: [Play Practice](https://droc-messy.github.io/play-practice/).
+
 Because it is one static file, any static host works. For GitHub Pages: repository **Settings → Pages**, deploy from the `main` branch and root folder.
