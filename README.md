@@ -6,6 +6,7 @@ No build step, no dependencies: open `index.html` in a browser, or host it on an
 
 ## Features
 
+- **Script choice:** choose **New script** (the preselected default, transcribed from `WiFi New.pdf` with the marked cuts omitted) or **Old script** (the original complete version). Both are embedded in `index.html`. **Custom script** restores your previously saved pasted script.
 - **Script format:** one line per speech, written as `CHARACTER: what they say`.
   - Stage directions in `(parentheses)` or `[brackets]` are shown but not spoken.
   - `ALL: ...` lines are said by everyone together.
@@ -22,12 +23,12 @@ No build step, no dependencies: open `index.html` in a browser, or host it on an
 
 ## Using it
 
-1. Open the app and, if you like, paste your own script under **📜 Script & voices**, then press **Load**. A sample script is included.
+1. Choose **New script** or **Old script** in the **Script** dropdown before starting. New script is selected each time you open the app. Changing the choice stops rehearsal and loads that edition from the beginning.
 2. Choose who is playing (up to four players).
 3. Optionally tick **Hide my words** and/or **Hide the words for all other roles**, and pick a speed.
 4. Press **Start**.
 
-Your script is saved in the browser (`localStorage`) so it is still there next time.
+To use your own script, paste it under **📜 Script & voices** and press **Load script**. Edited or pasted scripts become **Custom script** and are saved in the browser (`localStorage`); choose Custom script to restore them. Loading either built-in edition does not overwrite your saved custom script.
 
 ## Browser notes
 
